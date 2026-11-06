@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAD-2401 | Dashboard Ejecutivo - Brandon Fuentes Serrano</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+</head>
+<body>
+    <!-- Fondo animado con esferas difuminadas -->
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+    </div>
+
+    <!-- Cabecera Principal -->
+    <header class="glass-panel main-header anim-slide-down">
+        <div class="header-content">
+            <div class="title-group">
+                <h1>GAD-2401 Sales Dashboard</h1>
+                <p class="subtitle">Práctica Integradora | Análisis y Visualización de Datos</p>
+            </div>
+            <div class="student-info">
+                <span class="info-badge"><strong>Alumno:</strong> Brandon Fuentes Serrano</span>
+                <span class="info-badge"><strong>Profesor:</strong> Fabian Soberanes Martín</span>
+                <span class="info-badge"><strong>Grupo:</strong> 6951 | <strong>Turno:</strong> Vespertino</span>
+            </div>
+            <div class="header-actions">
+                <a href="report/GAD_2401_Sales_Report.pbix" download class="btn-download">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Descargar Archivo Power BI (.pbix)
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegación por Pestañas (Oculta hasta cargar datos) -->
+    <nav class="glass-panel nav-container anim-fade-in" id="main-nav" style="display: none;">
+        <ul id="nav-tabs">
+            <li><a href="#pag-resumen" class="active" data-tab="pag-resumen">Resumen Ejecutivo</a></li>
+            <li><a href="#pag-desglose" data-tab="pag-desglose">Desglose Comercial</a></li>
+            <li><a href="#pag-tendencia" data-tab="pag-tendencia">Tendencia Temporal</a></li>
+            <li><a href="#pag-asociacion" data-tab="pag-asociacion">Asociaciones</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+
+        <!-- Módulo de Carga Inicial -->
+        <section id="carga" class="page-section active anim-scale-up">
+            <div class="upload-window glass-panel">
+                <h2>Inicializar Dashboard</h2>
+                <p class="text-justify">Para desbloquear los gráficos interactivos y los filtros, cargue los tres archivos CSV correspondientes a los hechos y dimensiones del sistema.</p>
+                
+                <div class="upload-box" id="drop-zone">
+                    <div class="upload-icon">📁</div>
+                    <p>Arrastre los archivos aquí o</p>
+                    <label for="file-input" class="btn-upload">Seleccionar Archivos CSV</label>
+                    <input type="file" id="file-input" multiple accept=".csv" hidden>
+                </div>
+                <div class="upload-status" id="upload-status">
+                    <p>Esperando: <strong>hechos_ventas.csv</strong>, <strong>dim_cliente.csv</strong>, <strong>dim_producto.csv</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contenedor del Dashboard -->
+        <div id="dashboard-container" style="display: none;">
+
+            <!-- Barra de Filtros (Slicers) -->
+            <div class="filters-bar glass-panel anim-slide-down">
+                <div class="filter-group">
+                    <label>Año</label>
+                    <select id="filter-year">
+                        <option value="Todos">Todos los años</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Región</label>
+                    <select id="filter-region">
+                        <option value="Todas">Todas las regiones</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Segmento</label>
+                    <select id="filter-segmento">
+                        <option value="Todos">Todos los segmentos</option>
+                        <option value="Retail">Retail</option>
+                        <option value="Mayoreo">Mayoreo</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Categoría</label>
+                    <select id="filter-categoria">
+                        <option value="Todas">Todas las categorías</option>
+                        <option value="Computo">Cómputo</option>
+                        <option value="Accesorio">Accesorio</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Página 1: Resumen Ejecutivo -->
+            <section id="pag-resumen" class="page-section active">
+                <div class="text-box glass-panel analysis-text anim-fade-in">
+                    <h3>Pregunta de Negocio</h3>
+                    <p>La decisión que organiza este análisis consiste en determinar en qué región y categoría de producto se debe enfocar la inversión publicitaria y de inventario para el próximo trimestre, fundamentándose en la rentabilidad y el volumen de ventas. El usuario principal de este tablero es el Gerente Comercial y de Operaciones, quien utilizará la información para optimizar la asignación del presupuesto y los recursos logísticos.</p>
+                </div>
+
+                <div class="kpi-grid anim-slide-up">
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-label">Ventas Totales</div>
+                        <div class="kpi-value" id="kpi-ventas">0</div>
+                    </div>
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-label">Transacciones (Tickets)</div>
+                        <div class="kpi-value" id="kpi-tickets">0</div>
+                    </div>
+                    <div class="kpi-card glass-panel">
+                        <div class="kpi-label">Ticket Promedio</div>
+                        <div class="kpi-value" id="kpi-ticket-prom">0</div>
+                    </div>
+                </div>
+
+                <div class="grid-2-col anim-slide-up">
+                    <div class="chart-card glass-panel static-chart">
+                        <div class="chart-title">Ventas Totales <span>por Región</span></div>
+                        <div class="canvas-container"><canvas id="chartRegiones"></canvas></div>
+                    </div>
+                    <div class="chart-card glass-panel static-chart">
+                        <div class="chart-title">Ventas Totales <span>por Categoría</span></div>
+                        <div class="canvas-container"><canvas id="chartCategorias"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Página 2: Desglose Comercial -->
+            <section id="pag-desglose" class="page-section">
+                <div class="grid-2-col-desglose anim-slide-up">
+                    <div class="chart-card glass-panel static-chart table-card">
+                        <div class="chart-title">Rendimiento por Producto</div>
+                        <div class="table-responsive">
+                            <table id="tablaProductos">
+                                <thead><tr><th>Producto</th><th>Ventas Totales</th><th>Cantidad Total</th></tr></thead>
+                                <tbody></tbody>
+                                <tfoot><tr><th>Total</th><th id="tot-ventas-tabla">0</th><th id="tot-cant-tabla">0</th></tr></tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="chart-card glass-panel static-chart">
+                        <div class="chart-title">Ventas Totales <span>por Segmento y Región</span></div>
+                        <div class="canvas-container canvas-large"><canvas id="chartSegmentoRegion"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Página 3: Tendencia Temporal -->
+            <section id="pag-tendencia" class="page-section">
+                <div class="grid-2-col anim-slide-up">
+                    <div class="chart-card glass-panel static-chart">
+                        <div class="chart-title">Evolución de Ventas <span>(2024 vs 2025)</span></div>
+                        <div class="canvas-container"><canvas id="chartTendenciaMensual"></canvas></div>
+                    </div>
+                    <div class="chart-card glass-panel static-chart">
+                        <div class="chart-title">Variación Porcentual vs Año Anterior <span>por Mes</span></div>
+                        <div class="canvas-container"><canvas id="chartVariacion"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Página 4: Asociaciones y Hallazgos -->
+            <section id="pag-asociacion" class="page-section">
+                <div class="grid-asociacion anim-slide-up">
+                    <div class="chart-card glass-panel static-chart">
+                        <div class="chart-title">Dispersión: Ventas Totales vs Ticket Promedio <span>por Cliente</span></div>
+                        <div class="canvas-container canvas-large"><canvas id="chartScatter"></canvas></div>
+                    </div>
+                    
+                    <div class="asociacion-sidebar">
+                        <div class="chart-card glass-panel static-chart">
+                            <div class="chart-title">Matriz de Distribución Porcentual <span>(Categoría en Región)</span></div>
+                            <div class="table-responsive">
+                                <table id="tablaMatriz">
+                                    <thead><tr><th>Región</th><th>Accesorio</th><th>Computo</th><th>Total</th></tr></thead>
+                                    <tbody></tbody>
+                                    <tfoot><tr><th>Total</th><th id="tot-acc">0</th><th id="tot-comp">0</th><th>1.00</th></tr></tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card glass-panel tau-card">
+                            <div class="kpi-label">Interpretación Tau</div>
+                            <div class="tau-value-text" id="tau-interpretacion">Calculando...</div>
+                        </div>
+
+                        <div class="kpi-card glass-panel tau-card">
+                            <div class="kpi-label">Coeficiente Tau de Kendall</div>
+                            <div class="kpi-value" id="tau-value">0.00</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Análisis Teórico y Conclusiones -->
+                <div class="grid-2-col" style="margin-top: 2rem;">
+                    <div class="text-box glass-panel warning anim-fade-in">
+                        <h3>Análisis de Correlación y Causalidad</h3>
+                        <p>El coeficiente Tau de Kendall y los gráficos de dispersión presentados en esta sección evidencian una asociación estadística entre las variables analizadas. Sin embargo, es fundamental establecer una distinción teórica entre asociación y causalidad. La existencia de una correlación indica que dos variables varían de manera conjunta, pero no implica que una sea la causa de la otra. En este conjunto de datos, factores externos no medidos, conocidos como variables de confusión, podrían estar influyendo en ambas métricas simultáneamente. Dado que la naturaleza de los datos es observacional y sintética, carece de un diseño experimental controlado que permita aislar los efectos. Por lo tanto, no es metodológicamente válido afirmar una relación causa-efecto sin la implementación de un estudio aleatorizado o técnicas cuasi-experimentales.</p>
+                    </div>
+                    <div class="text-box glass-panel success anim-fade-in">
+                        <h3>Conclusiones y Recomendaciones</h3>
+                        <p>El análisis de los datos revela una clara concentración de los ingresos en la categoría de Cómputo, mientras que los accesorios, a pesar de registrar un mayor volumen de transacciones, presentan un menor impacto monetario. A partir de estos hallazgos, se recomienda reasignar la inversión publicitaria hacia la región Centro, que consistentemente muestra el mayor rendimiento. Asimismo, se sugiere la implementación de estrategias de venta cruzada dirigidas a los clientes que adquieren productos de cómputo, con el objetivo de incrementar el ticket promedio mediante la inclusión de accesorios complementarios. Finalmente, se aconseja mantener un monitoreo continuo de la estacionalidad observada en el último trimestre del año para optimizar la gestión de inventario y evitar quiebres de stock.</p>
+                    </div>
+                </div>
+            </section>
+
+        </div> <!-- Fin dashboard-container -->
+    </main>
+
+    <footer class="glass-panel anim-fade-in">
+        <p>Práctica Integradora GAD-2401 | Brandon Fuentes Serrano | &copy; 2024</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

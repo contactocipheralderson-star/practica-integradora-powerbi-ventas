@@ -1,0 +1,6 @@
+ProductoID,Producto,Categoria,CostoUnitario
+1,Laptop,Computo,12000
+2,Mouse,Accesorio,250
+3,Teclado,Accesorio,600
+4,Monitor,Computo,3500
+5,Headset,Accesorio,800
